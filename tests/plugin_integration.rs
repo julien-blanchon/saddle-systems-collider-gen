@@ -4,7 +4,7 @@ use bevy::{
     render::render_resource::{Extent3d, TextureDimension, TextureFormat, TextureUsages},
 };
 
-use saddle_systems_saddle_systems_collider_gen::{
+use saddle_systems_collider_gen::{
     BinaryImage, ColliderGenConfig, ColliderGenDirty, ColliderGenLod, ColliderGenPlugin,
     ColliderGenSource, ColliderGenSourceKind, ColliderGenSystems, ContourMode,
 };
