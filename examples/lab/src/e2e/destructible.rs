@@ -1,4 +1,4 @@
-use bevy_e2e::{action::Action, actions::assertions, scenario::Scenario};
+use saddle_bevy_e2e::{action::Action, actions::assertions, scenario::Scenario};
 
 use crate::{LabDiagnostics, LabView};
 

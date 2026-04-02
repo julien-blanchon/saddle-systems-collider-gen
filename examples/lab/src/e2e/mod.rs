@@ -5,7 +5,7 @@ mod smoke;
 mod thresholds;
 
 use bevy::prelude::*;
-use bevy_e2e::{action::Action, scenario::Scenario};
+use saddle_bevy_e2e::{action::Action, scenario::Scenario};
 
 use crate::{LabView, set_active_view};
 
@@ -13,7 +13,7 @@ pub struct ColliderGenLabE2EPlugin;
 
 impl Plugin for ColliderGenLabE2EPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(bevy_e2e::E2EPlugin);
+        app.add_plugins(saddle_bevy_e2e::E2EPlugin);
 
         let args: Vec<String> = std::env::args().collect();
         let (scenario_name, handoff) = parse_e2e_args(&args);
@@ -23,7 +23,7 @@ impl Plugin for ColliderGenLabE2EPlugin {
                 if handoff {
                     scenario.actions.push(Action::Handoff);
                 }
-                bevy_e2e::init_scenario(app, scenario);
+                saddle_bevy_e2e::init_scenario(app, scenario);
             } else {
                 error!(
                     "[saddle-systems-collider-gen-lab:e2e] Unknown scenario '{name}'. Available: {:?}",
