@@ -164,8 +164,9 @@ fn isolated_dirty_regions_merge_back_into_full_output() {
         .world()
         .get::<saddle_systems_collider_gen::ColliderGenOutput>(entity)
         .expect("dirty update should regenerate output");
-    let expected = saddle_systems_collider_gen::generate_collider_geometry(&expected_mask, &default())
-        .expect("full regeneration should succeed");
+    let expected =
+        saddle_systems_collider_gen::generate_collider_geometry(&expected_mask, &default())
+            .expect("full regeneration should succeed");
 
     assert_eq!(output.source_region, Some(URect::new(6, 6, 14, 14)));
     assert_eq!(output.result, expected);
@@ -213,8 +214,9 @@ fn boundary_touching_dirty_regions_fall_back_to_full_regeneration() {
         .world()
         .get::<saddle_systems_collider_gen::ColliderGenOutput>(entity)
         .expect("dirty update should regenerate output");
-    let expected = saddle_systems_collider_gen::generate_collider_geometry(&expected_mask, &default())
-        .expect("full regeneration should succeed");
+    let expected =
+        saddle_systems_collider_gen::generate_collider_geometry(&expected_mask, &default())
+            .expect("full regeneration should succeed");
 
     assert_eq!(output.source_region, Some(URect::new(5, 0, 15, 8)));
     assert_eq!(output.result, expected);

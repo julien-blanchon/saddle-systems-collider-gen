@@ -1,7 +1,9 @@
 use saddle_systems_collider_gen_example_support as support;
 
 use bevy::prelude::*;
-use saddle_systems_collider_gen::{AtlasSlicer, BinaryImage, ColliderGenConfig, CoordinateTransform};
+use saddle_systems_collider_gen::{
+    AtlasSlicer, BinaryImage, ColliderGenConfig, CoordinateTransform,
+};
 
 #[derive(Resource)]
 struct FrameData {
@@ -30,9 +32,11 @@ fn setup(mut commands: Commands) {
     let mut frames = Vec::new();
     for index in 0..4 {
         let frame = slicer.slice_index(index).expect("frame should slice");
-        let result =
-            saddle_systems_collider_gen::generate_collider_geometry(&frame, &ColliderGenConfig::default())
-                .expect("frame should generate");
+        let result = saddle_systems_collider_gen::generate_collider_geometry(
+            &frame,
+            &ColliderGenConfig::default(),
+        )
+        .expect("frame should generate");
         frames.push((frame, result));
     }
 

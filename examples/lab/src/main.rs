@@ -261,7 +261,8 @@ fn setup_lab(mut commands: Commands, mut diagnostics: ResMut<LabDiagnostics>) {
             kind: ColliderGenSourceKind::Binary(initial_mask),
             config: ColliderGenConfig {
                 scale: Vec2::splat(LAB_SCALE),
-                ..ColliderGenConfig::default().with_lod(saddle_systems_collider_gen::ColliderGenLod::Medium)
+                ..ColliderGenConfig::default()
+                    .with_lod(saddle_systems_collider_gen::ColliderGenLod::Medium)
             },
         },
     ));
@@ -310,7 +311,8 @@ fn build_overview_scene() -> OverviewScene {
         &mask,
         &ColliderGenConfig {
             scale,
-            ..ColliderGenConfig::default().with_lod(saddle_systems_collider_gen::ColliderGenLod::Medium)
+            ..ColliderGenConfig::default()
+                .with_lod(saddle_systems_collider_gen::ColliderGenLod::Medium)
         },
     )
     .expect("pixel exact overview result should generate");
@@ -319,7 +321,8 @@ fn build_overview_scene() -> OverviewScene {
         &ColliderGenConfig {
             scale,
             contour_mode: ContourMode::MarchingSquares,
-            ..ColliderGenConfig::default().with_lod(saddle_systems_collider_gen::ColliderGenLod::Low)
+            ..ColliderGenConfig::default()
+                .with_lod(saddle_systems_collider_gen::ColliderGenLod::Low)
         },
     )
     .expect("marching squares overview result should generate");

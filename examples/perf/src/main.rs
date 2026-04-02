@@ -131,8 +131,9 @@ fn benchmark_dirty_region() {
         .expect("dirty-region output should exist");
 
     let full_started = Instant::now();
-    let full_result = saddle_systems_collider_gen::generate_collider_geometry(&edited_mask, &config)
-        .expect("full regeneration should succeed");
+    let full_result =
+        saddle_systems_collider_gen::generate_collider_geometry(&edited_mask, &config)
+            .expect("full regeneration should succeed");
     let full_elapsed = full_started.elapsed();
 
     println!(

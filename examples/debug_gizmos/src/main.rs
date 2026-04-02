@@ -2,7 +2,9 @@ use saddle_systems_collider_gen_example_support as support;
 
 use bevy::prelude::*;
 use bevy_brp_extras::BrpExtrasPlugin;
-use saddle_systems_collider_gen::{BinaryImage, ColliderGenConfig, ContourMode, CoordinateTransform};
+use saddle_systems_collider_gen::{
+    BinaryImage, ColliderGenConfig, ContourMode, CoordinateTransform,
+};
 
 #[derive(Resource)]
 struct ComparisonScene {
@@ -52,7 +54,8 @@ fn setup(mut commands: Commands) {
         &mask,
         &ColliderGenConfig {
             contour_mode: ContourMode::MarchingSquares,
-            ..ColliderGenConfig::default().with_lod(saddle_systems_collider_gen::ColliderGenLod::Low)
+            ..ColliderGenConfig::default()
+                .with_lod(saddle_systems_collider_gen::ColliderGenLod::Low)
         },
     )
     .expect("marching squares generation should succeed");

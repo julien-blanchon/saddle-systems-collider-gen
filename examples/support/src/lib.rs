@@ -1,7 +1,9 @@
 use std::env;
 
 use bevy::prelude::*;
-use saddle_systems_collider_gen::{BinaryImage, ColliderGenResult, CompoundPolygon, Contour, CoordinateTransform};
+use saddle_systems_collider_gen::{
+    BinaryImage, ColliderGenResult, CompoundPolygon, Contour, CoordinateTransform,
+};
 
 #[derive(Resource)]
 struct ExampleAutoExit(Timer);

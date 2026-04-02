@@ -1,12 +1,18 @@
 use saddle_systems_collider_gen_example_support as support;
 
 use bevy::prelude::*;
-use saddle_systems_collider_gen::{AtlasSlicer, BinaryImage, ColliderGenConfig, CoordinateTransform};
 use image::{DynamicImage, Rgba, RgbaImage};
+use saddle_systems_collider_gen::{
+    AtlasSlicer, BinaryImage, ColliderGenConfig, CoordinateTransform,
+};
 
 #[derive(Resource)]
 struct AtlasScene {
-    tiles: Vec<(BinaryImage, saddle_systems_collider_gen::ColliderGenResult, Vec2)>,
+    tiles: Vec<(
+        BinaryImage,
+        saddle_systems_collider_gen::ColliderGenResult,
+        Vec2,
+    )>,
 }
 
 fn main() {
@@ -53,8 +59,11 @@ fn setup(mut commands: Commands) {
         if tile.filled_count() == 0 {
             continue;
         }
-        let result = saddle_systems_collider_gen::generate_collider_geometry(&tile, &ColliderGenConfig::default())
-            .expect("tile collider generation should succeed");
+        let result = saddle_systems_collider_gen::generate_collider_geometry(
+            &tile,
+            &ColliderGenConfig::default(),
+        )
+        .expect("tile collider generation should succeed");
         let column = (slot % 3) as f32;
         let row = (slot / 3) as f32;
         tiles.push((
