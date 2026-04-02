@@ -1,0 +1,14 @@
+[package]
+name = "saddle-systems-collider-gen-example-atlas"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+bevy = { workspace = true }
+saddle-systems-collider-gen = { workspace = true, features = ["image"] }
+saddle-systems-collider-gen-example-support = { path = "../support" }
+image = { workspace = true }
+
+[lints]
+workspace = true

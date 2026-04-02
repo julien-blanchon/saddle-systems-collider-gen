@@ -1,0 +1,33 @@
+[package]
+name = "saddle-systems-collider-gen"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Engine-agnostic 2D collision geometry generation from binary masks and Bevy images"
+repository = "https://github.com/julien-blanchon/saddle-systems-collider-gen"
+license = "MIT-0"
+
+[features]
+default = []
+image = ["dep:image"]
+serde = ["dep:serde"]
+
+[dependencies]
+bevy = { version = "0.18", features = ["serialize"] }
+
+[dependencies.image]
+version = "0.25"
+optional = true
+default-features = true
+
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+optional = true
+
+[workspace]
+
+[lints.clippy]
+too_many_arguments = "allow"
+type_complexity = "allow"
+nonstandard_macro_braces = "warn"

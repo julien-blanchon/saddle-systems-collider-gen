@@ -1,0 +1,14 @@
+[package]
+name = "saddle-systems-collider-gen-example-debug-gizmos"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+bevy = { workspace = true }
+saddle-systems-collider-gen = { workspace = true }
+saddle-systems-collider-gen-example-support = { path = "../support" }
+bevy_brp_extras = { workspace = true }
+
+[lints]
+workspace = true
