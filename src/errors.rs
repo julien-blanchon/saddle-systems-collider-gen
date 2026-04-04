@@ -40,6 +40,7 @@ impl std::error::Error for ColliderGenError {}
 pub enum ColliderGenWarning {
     DegenerateContourSkipped { index: usize },
     SimplificationRetried { index: usize, retry_count: u32 },
+    SimplificationFallback { index: usize },
     DirtyRegionEmpty,
     HoleAwareDecompositionRecommended,
 }

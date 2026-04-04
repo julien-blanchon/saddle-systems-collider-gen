@@ -79,14 +79,24 @@ pub(crate) fn simplify_contours(
     let mut warnings = Vec::new();
 
     for (index, contour) in contours.iter().enumerate() {
-        let (contour, _, contour_warnings) = simplify_contour(contour, config)?;
-        warnings.extend(contour_warnings.into_iter().map(|warning| match warning {
-            ColliderGenWarning::SimplificationRetried { retry_count, .. } => {
-                ColliderGenWarning::SimplificationRetried { index, retry_count }
+        match simplify_contour(contour, config) {
+            Ok((simplified_contour, _, contour_warnings)) => {
+                warnings.extend(contour_warnings.into_iter().map(|warning| match warning {
+                    ColliderGenWarning::SimplificationRetried { retry_count, .. } => {
+                        ColliderGenWarning::SimplificationRetried { index, retry_count }
+                    }
+                    other => other,
+                }));
+                simplified.push(simplified_contour);
             }
-            other => other,
-        }));
-        simplified.push(contour);
+            Err(_) => {
+                // Simplification failed to produce a valid polygon even after all retries.
+                // Fall back to the original unsimplified contour and emit a warning so
+                // callers are informed without crashing.
+                warnings.push(ColliderGenWarning::SimplificationFallback { index });
+                simplified.push(contour.clone());
+            }
+        }
     }
 
     Ok((simplified, warnings))
