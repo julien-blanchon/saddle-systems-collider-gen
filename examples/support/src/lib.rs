@@ -1,12 +1,129 @@
 use std::env;
 
 use bevy::prelude::*;
+use saddle_pane::prelude::*;
 use saddle_systems_collider_gen::{
-    BinaryImage, ColliderGenResult, CompoundPolygon, Contour, CoordinateTransform,
+    BinaryImage, ColliderGenConfig, ColliderGenLod, ColliderGenResult, CompoundPolygon, Contour,
+    ContourMode, CoordinateTransform,
 };
 
 #[derive(Resource)]
 struct ExampleAutoExit(Timer);
+
+#[derive(Resource, Debug, Clone, PartialEq, Pane)]
+#[pane(title = "Collider Gen", position = "top-right")]
+pub struct ColliderGenExamplePane {
+    #[pane(folder = "Generation", slider, min = 8.0, max = 42.0, step = 1.0)]
+    pub render_scale: f32,
+    #[pane(folder = "Generation", toggle)]
+    pub use_marching_squares: bool,
+    #[pane(folder = "Generation", toggle)]
+    pub decompose: bool,
+    #[pane(folder = "Generation", slider, min = 0.0, max = 2.0, step = 0.05)]
+    pub rdp_epsilon: f32,
+    #[pane(folder = "Generation", slider, min = 0.0, max = 0.4, step = 0.01)]
+    pub visvalingam_area_threshold: f32,
+    #[pane(folder = "Generation", slider, min = 0.0, max = 4.0, step = 0.1)]
+    pub minimum_area: f32,
+    #[pane(folder = "Examples", slider, min = 0.0, max = 4.0, step = 1.0)]
+    pub morphology_radius: u32,
+    #[pane(folder = "Examples", slider, min = 0.12, max = 1.2, step = 0.02)]
+    pub cycle_seconds: f32,
+    #[pane(folder = "Examples", slider, min = 1.0, max = 5.0, step = 0.25)]
+    pub blast_radius: f32,
+    #[pane(folder = "Examples", slider, min = 1.0, max = 5.0, step = 1.0)]
+    pub lab_view: u32,
+    #[pane(folder = "Visuals", toggle)]
+    pub show_mask: bool,
+    #[pane(folder = "Visuals", toggle)]
+    pub show_hulls: bool,
+    #[pane(folder = "Visuals", toggle)]
+    pub show_pieces: bool,
+    #[pane(monitor)]
+    pub contour_count: u32,
+    #[pane(monitor)]
+    pub hull_count: u32,
+    #[pane(monitor)]
+    pub piece_count: u32,
+    #[pane(monitor)]
+    pub warning_count: u32,
+}
+
+impl Default for ColliderGenExamplePane {
+    fn default() -> Self {
+        let config = ColliderGenConfig::default();
+        Self {
+            render_scale: 20.0,
+            use_marching_squares: false,
+            decompose: config.decomposition.enabled,
+            rdp_epsilon: config.simplification.rdp_epsilon,
+            visvalingam_area_threshold: config.simplification.visvalingam_area_threshold,
+            minimum_area: config.minimum_area,
+            morphology_radius: 1,
+            cycle_seconds: 0.35,
+            blast_radius: 2.0,
+            lab_view: 1,
+            show_mask: true,
+            show_hulls: true,
+            show_pieces: true,
+            contour_count: 0,
+            hull_count: 0,
+            piece_count: 0,
+            warning_count: 0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ColliderGenPaneSettings {
+    pub render_scale: f32,
+    pub use_marching_squares: bool,
+    pub decompose: bool,
+    pub rdp_epsilon: f32,
+    pub visvalingam_area_threshold: f32,
+    pub minimum_area: f32,
+    pub morphology_radius: u32,
+    pub cycle_seconds: f32,
+    pub blast_radius: f32,
+    pub lab_view: u32,
+    pub show_mask: bool,
+    pub show_hulls: bool,
+    pub show_pieces: bool,
+}
+
+pub fn pane_settings(pane: &ColliderGenExamplePane) -> ColliderGenPaneSettings {
+    ColliderGenPaneSettings {
+        render_scale: pane.render_scale,
+        use_marching_squares: pane.use_marching_squares,
+        decompose: pane.decompose,
+        rdp_epsilon: pane.rdp_epsilon,
+        visvalingam_area_threshold: pane.visvalingam_area_threshold,
+        minimum_area: pane.minimum_area,
+        morphology_radius: pane.morphology_radius,
+        cycle_seconds: pane.cycle_seconds,
+        blast_radius: pane.blast_radius,
+        lab_view: pane.lab_view,
+        show_mask: pane.show_mask,
+        show_hulls: pane.show_hulls,
+        show_pieces: pane.show_pieces,
+    }
+}
+
+pub fn pane_plugins() -> (
+    bevy_flair::FlairPlugin,
+    bevy_input_focus::InputDispatchPlugin,
+    bevy_ui_widgets::UiWidgetsPlugins,
+    bevy_input_focus::tab_navigation::TabNavigationPlugin,
+    saddle_pane::PanePlugin,
+) {
+    (
+        bevy_flair::FlairPlugin,
+        bevy_input_focus::InputDispatchPlugin,
+        bevy_ui_widgets::UiWidgetsPlugins,
+        bevy_input_focus::tab_navigation::TabNavigationPlugin,
+        saddle_pane::PanePlugin,
+    )
+}
 
 pub fn configure_app(app: &mut App, title: &str) {
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -18,8 +135,34 @@ pub fn configure_app(app: &mut App, title: &str) {
         ..default()
     }))
     .insert_resource(ClearColor(Color::srgb(0.06, 0.07, 0.09)))
+    .init_resource::<ColliderGenExamplePane>()
+    .add_plugins(pane_plugins())
+    .register_pane::<ColliderGenExamplePane>()
     .add_systems(Startup, setup_camera);
     install_auto_exit(app);
+}
+
+pub fn pane_config(pane: &ColliderGenExamplePane, lod: ColliderGenLod) -> ColliderGenConfig {
+    let mut config = ColliderGenConfig::default().with_lod(lod);
+    config.scale = Vec2::splat(pane.render_scale.max(1.0));
+    config.contour_mode = if pane.use_marching_squares {
+        ContourMode::MarchingSquares
+    } else {
+        ContourMode::PixelExact
+    };
+    config.simplification.rdp_epsilon = pane.rdp_epsilon.max(0.0);
+    config.simplification.visvalingam_area_threshold =
+        pane.visvalingam_area_threshold.max(0.0);
+    config.minimum_area = pane.minimum_area.max(0.0);
+    config.decomposition.enabled = pane.decompose;
+    config
+}
+
+pub fn update_result_stats(pane: &mut ColliderGenExamplePane, result: &ColliderGenResult) {
+    pane.contour_count = result.contours.len() as u32;
+    pane.hull_count = result.convex_hulls.len() as u32;
+    pane.piece_count = result.convex_pieces.len() as u32;
+    pane.warning_count = result.warnings.len() as u32;
 }
 
 fn setup_camera(mut commands: Commands) {

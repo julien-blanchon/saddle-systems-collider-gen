@@ -67,6 +67,7 @@ App::new()
 | `ColliderGenConfig` | Thresholding, contour mode, scale, simplification, LOD, and decomposition settings |
 | `ColliderGenResult` | Final contours, topology, convex hulls, convex pieces, bounds, and warnings |
 | `AtlasSlicer` | Bevy-style row-major atlas slicing from full masks or arbitrary `URect` subregions |
+| `AtlasColliderFrame`, `bake_atlas_collider_frames` | Batch-bakes non-empty atlas slices into deterministic per-frame collider outputs |
 | `CoordinateTransform` | Pixel-corner to local-centered coordinate conversion with non-uniform scale |
 
 ### ECS integration
@@ -101,13 +102,22 @@ Current pass behavior:
 
 | Example | Purpose | Run |
 | --- | --- | --- |
-| `basic` | Minimal authored-mask workflow with outlines, hulls, and convex pieces | `cargo run -p saddle-systems-collider-gen-example-basic` |
-| `atlas` | Atlas slicing and per-frame / per-tile generation using the `image` feature | `cargo run -p saddle-systems-collider-gen-example-atlas --features image` |
-| `masks` | Binary-image morphology and cleanup workflows | `cargo run -p saddle-systems-collider-gen-example-masks` |
-| `destructible` | ECS-driven dirty regeneration on a mutable terrain mask | `cargo run -p saddle-systems-collider-gen-example-destructible` |
-| `animation_frames` | Precomputed frame geometry from a spritesheet-like atlas | `cargo run -p saddle-systems-collider-gen-example-animation-frames` |
-| `debug_gizmos` | Pixel-exact vs marching-squares comparison with BRP extras enabled | `cargo run -p saddle-systems-collider-gen-example-debug-gizmos` |
-| `perf` | Release/debug-oriented timings for sparse+dense masks, simplification, atlas slicing, and dirty-region regen | `cargo run -p saddle-systems-collider-gen-example-perf` |
+| `basic` | Minimal authored-mask workflow with live contour-mode, simplification, scale, and decomposition tuning | `cargo run -p saddle-systems-collider-gen-example-basic` |
+| `atlas` | Atlas slicing and per-frame / per-tile generation using the `image` feature, with live extraction tuning | `cargo run -p saddle-systems-collider-gen-example-atlas --features image` |
+| `masks` | Binary-image morphology and cleanup workflows with interactive radius controls | `cargo run -p saddle-systems-collider-gen-example-masks` |
+| `destructible` | ECS-driven dirty regeneration on a mutable terrain mask with live blast radius and config tuning | `cargo run -p saddle-systems-collider-gen-example-destructible` |
+| `tilemap_merge` | Game-like tile composition demo that stamps reusable masks into one seamless collider canvas | `cargo run -p saddle-systems-collider-gen-example-tilemap-merge` |
+| `animation_frames` | Precomputed frame geometry from a spritesheet-like atlas via `bake_atlas_collider_frames`, with live playback and extraction tuning | `cargo run -p saddle-systems-collider-gen-example-animation-frames` |
+| `debug_gizmos` | Pixel-exact vs marching-squares comparison with BRP extras enabled and live simplification controls | `cargo run -p saddle-systems-collider-gen-example-debug-gizmos` |
+| `perf` | Interactive benchmark dashboard for sparse+dense masks, simplification, atlas slicing, and dirty-region regen | `cargo run -p saddle-systems-collider-gen-example-perf` |
+
+Every visual example now includes a `saddle-pane` panel that exposes the key generation settings live:
+
+- render scale
+- contour mode
+- convex decomposition toggle
+- simplification tolerances
+- example-specific controls such as morphology radius, frame cadence, or blast radius
 
 ## Workspace Lab
 
@@ -127,6 +137,9 @@ cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_atla
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_composite
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_destructible
 ```
+
+The lab also exposes the same `saddle-pane` controls so you can switch views, adjust the active
+destructible config, and inspect contour / piece counts without recompiling.
 
 ## Recommended Bake Workflow
 

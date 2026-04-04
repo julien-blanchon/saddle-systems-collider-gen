@@ -11,7 +11,9 @@ e2e = ["dep:saddle-bevy-e2e"]
 
 [dependencies]
 bevy = { version = "0.18", features = ["bevy_remote", "serialize"] }
+saddle-pane = { workspace = true }
 saddle-systems-collider-gen = { workspace = true }
+saddle-systems-collider-gen-example-support = { path = "../support" }
 bevy_brp_extras = { version = "0.19", optional = true }
 saddle-bevy-e2e = { git = "https://github.com/julien-blanchon/saddle-bevy-e2e", features = ["json"], optional = true }
 

@@ -4,7 +4,7 @@ use bevy::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::{BinaryImage, ColliderGenError};
+use crate::{BinaryImage, ColliderGenConfig, ColliderGenError, ColliderGenResult};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Reflect)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -24,6 +24,13 @@ pub struct AtlasSlicer {
     rows: u32,
     padding: UVec2,
     offset: UVec2,
+}
+
+#[derive(Clone, Debug, PartialEq, Reflect)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct AtlasColliderFrame {
+    pub region: AtlasRegion,
+    pub result: ColliderGenResult,
 }
 
 impl AtlasSlicer {
@@ -106,6 +113,26 @@ impl AtlasSlicer {
             UVec2::new(x + self.tile_size.x, y + self.tile_size.y),
         )
     }
+}
+
+pub fn bake_atlas_collider_frames(
+    slicer: &AtlasSlicer,
+    config: &ColliderGenConfig,
+) -> Result<Vec<AtlasColliderFrame>, ColliderGenError> {
+    let mut frames = Vec::new();
+
+    for region in slicer.iter_regions() {
+        let mask = slicer.slice_rect(region.rect)?;
+        if mask.filled_count() == 0 {
+            continue;
+        }
+        frames.push(AtlasColliderFrame {
+            region,
+            result: crate::generate_collider_geometry(&mask, config)?,
+        });
+    }
+
+    Ok(frames)
 }
 
 #[cfg(test)]

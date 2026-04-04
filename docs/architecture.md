@@ -11,6 +11,7 @@
 source bytes / Bevy Image / BinaryImage
     -> threshold extraction
     -> optional crop / atlas slice / dirty-region crop
+       -> atlas batches can be pre-baked with `bake_atlas_collider_frames(...)`
     -> optional mask authoring helpers
        -> grow / shrink via morphology
        -> stamp / carve sub-masks for tilemap-style composition
@@ -110,6 +111,7 @@ Practical guidance:
 
 - use runtime generation for tools, previews, and rare edits
 - use `stamp_mask` to compose many per-tile masks into one larger canvas before extracting final runtime geometry
+- use the `tilemap_merge` example as the reference pattern when you want one collider result from many reusable room, ground, or wall tiles
 - pre-bake authored content
 - keep destructible dirty regions small
 - expect boundary-touching dirty edits on large continuous terrain to fall back to full regeneration

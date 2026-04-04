@@ -1,5 +1,5 @@
 [package]
-name = "saddle-systems-collider-gen-example-animation-frames"
+name = "saddle-systems-collider-gen-example-tilemap-merge"
 version = "0.1.0"
 edition = "2024"
 publish = false

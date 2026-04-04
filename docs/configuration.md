@@ -99,3 +99,23 @@ This keeps dirty updates deterministic and correct without pretending that every
   removes pixels using another mask silhouette, useful for subtractive editors or destructible decals
 
 These helpers are especially useful for tilemap composite workflows: stamp many tile masks into one larger `BinaryImage`, then extract contours once from the merged canvas to remove internal seams.
+
+## Example Panels
+
+The crate-local examples and lab ship with `saddle-pane` controls layered on top of the public API.
+Those panels do not add new crate runtime types, but they directly drive the existing configuration
+surface:
+
+- render scale -> `ColliderGenConfig::scale`
+- contour mode toggle -> `ColliderGenConfig::contour_mode`
+- decomposition toggle -> `DecompositionConfig::enabled`
+- simplification sliders -> `SimplificationConfig::rdp_epsilon` and `visvalingam_area_threshold`
+- minimum-area slider -> `ColliderGenConfig::minimum_area`
+
+Example-specific panel fields then feed the authored source data for that scene:
+
+- morphology radius in `masks`
+- frame cadence in `animation_frames`
+- stamped tile composition in `tilemap_merge`
+- blast radius in `destructible`
+- lab view selection in `examples/lab`

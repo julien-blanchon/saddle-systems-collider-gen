@@ -1,17 +1,21 @@
 #[cfg(feature = "e2e")]
 mod e2e;
 
+use saddle_systems_collider_gen_example_support as support;
+
 use bevy::{
     asset::RenderAssetUsages,
     prelude::*,
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
+use saddle_pane::prelude::*;
 use saddle_systems_collider_gen::{
     AtlasSlicer, BinaryImage, ColliderGenConfig, ColliderGenDirty, ColliderGenFinished,
     ColliderGenOutput, ColliderGenPlugin, ColliderGenSource, ColliderGenSourceKind,
     ColliderGenSystems, ColliderGenWarning, Contour, ContourMode, CoordinateTransform,
     extract_pixel_exact_contours,
 };
+use support::ColliderGenExamplePane;
 
 #[cfg(feature = "dev")]
 use bevy_brp_extras::BrpExtrasPlugin;
@@ -165,6 +169,7 @@ fn main() {
         ..default()
     }))
     .insert_resource(ClearColor(Color::srgb(0.05, 0.06, 0.08)))
+    .init_resource::<ColliderGenExamplePane>()
     .init_resource::<ActiveView>()
     .init_resource::<LabDiagnostics>()
     .insert_resource(DestructiblePattern {
@@ -186,6 +191,8 @@ fn main() {
     .register_type::<CompositeDiagnostics>()
     .register_type::<DestructibleDiagnostics>()
     .register_type::<LabDiagnostics>()
+    .add_plugins(support::pane_plugins())
+    .register_pane::<ColliderGenExamplePane>()
     .add_plugins(ColliderGenPlugin);
 
     #[cfg(feature = "dev")]
@@ -198,12 +205,14 @@ fn main() {
     app.add_systems(
         Update,
         (
+            sync_lab_pane,
             handle_keyboard_view_switches,
             sync_active_view_diagnostics,
             reset_destructible_scene.before(ColliderGenSystems::Extract),
             apply_destructible_blasts.before(ColliderGenSystems::Extract),
             track_destructible_generations.after(ColliderGenSystems::Cache),
             draw_active_scene.after(ColliderGenSystems::Cache),
+            reflect_lab_pane.after(draw_active_scene),
             update_overlay.after(ColliderGenSystems::Cache),
         ),
     );
@@ -580,6 +589,48 @@ fn build_destructible_mask() -> BinaryImage {
     mask
 }
 
+fn sync_lab_pane(
+    pane: Res<ColliderGenExamplePane>,
+    mut active_view: ResMut<ActiveView>,
+    mut pattern: ResMut<DestructiblePattern>,
+    mut query: Query<&mut ColliderGenSource, With<LabDestructibleSource>>,
+) {
+    active_view.current = match pane.lab_view.clamp(1, 5) {
+        1 => LabView::Overview,
+        2 => LabView::Thresholds,
+        3 => LabView::Atlas,
+        4 => LabView::Composite,
+        _ => LabView::Destructible,
+    };
+
+    pattern.timer
+        .set_duration(std::time::Duration::from_secs_f32(pane.cycle_seconds.max(0.05)));
+
+    let Ok(mut source) = query.single_mut() else {
+        return;
+    };
+    source.config = ColliderGenConfig {
+        scale: Vec2::splat(pane.render_scale.max(1.0)),
+        contour_mode: if pane.use_marching_squares {
+            ContourMode::MarchingSquares
+        } else {
+            ContourMode::PixelExact
+        },
+        minimum_area: pane.minimum_area.max(0.0),
+        decomposition: saddle_systems_collider_gen::DecompositionConfig {
+            enabled: pane.decompose,
+            ..default()
+        },
+        simplification: saddle_systems_collider_gen::SimplificationConfig {
+            rdp_epsilon: pane.rdp_epsilon.max(0.0),
+            visvalingam_area_threshold: pane.visvalingam_area_threshold.max(0.0),
+            ..default()
+        },
+        ..ColliderGenConfig::default()
+            .with_lod(saddle_systems_collider_gen::ColliderGenLod::Medium)
+    };
+}
+
 fn handle_keyboard_view_switches(
     input: Res<ButtonInput<KeyCode>>,
     mut active_view: ResMut<ActiveView>,
@@ -635,6 +686,7 @@ fn reset_destructible_scene(
 fn apply_destructible_blasts(
     active_view: Res<ActiveView>,
     time: Res<Time>,
+    pane: Res<ColliderGenExamplePane>,
     mut pattern: ResMut<DestructiblePattern>,
     mut diagnostics: ResMut<LabDiagnostics>,
     mut commands: Commands,
@@ -656,13 +708,14 @@ fn apply_destructible_blasts(
     pattern.index += 1;
 
     if let ColliderGenSourceKind::Binary(mask) = &mut source.kind {
-        mask.carve_circle(center, 2);
+        let blast_radius = pane.blast_radius.round().max(1.0) as i32;
+        mask.carve_circle(center, blast_radius);
         commands.entity(entity).insert(ColliderGenDirty {
             region: Some(IRect::new(
-                center.x - 3,
-                center.y - 3,
-                center.x + 3,
-                center.y + 3,
+                center.x - blast_radius - 1,
+                center.y - blast_radius - 1,
+                center.x + blast_radius + 1,
+                center.y + blast_radius + 1,
             )),
         });
         diagnostics.destructible.blasts_applied += 1;
@@ -739,6 +792,53 @@ fn update_overlay(
     };
 
     *text = Text::new(body);
+}
+
+fn reflect_lab_pane(
+    active_view: Res<ActiveView>,
+    diagnostics: Res<LabDiagnostics>,
+    mut pane: ResMut<ColliderGenExamplePane>,
+) {
+    pane.lab_view = match active_view.current {
+        LabView::Overview => 1,
+        LabView::Thresholds => 2,
+        LabView::Atlas => 3,
+        LabView::Composite => 4,
+        LabView::Destructible => 5,
+    };
+
+    match active_view.current {
+        LabView::Overview => {
+            pane.contour_count = diagnostics.overview.simplified_contours as u32;
+            pane.hull_count = diagnostics.overview.marching_contours as u32;
+            pane.piece_count = diagnostics.overview.convex_pieces as u32;
+            pane.warning_count = 0;
+        }
+        LabView::Thresholds => {
+            pane.contour_count = diagnostics.thresholds.alpha_filled as u32;
+            pane.hull_count = diagnostics.thresholds.luma_filled as u32;
+            pane.piece_count = diagnostics.thresholds.keyed_filled as u32;
+            pane.warning_count = 0;
+        }
+        LabView::Atlas => {
+            pane.contour_count = diagnostics.atlas.total_tile_contours as u32;
+            pane.hull_count = diagnostics.atlas.non_empty_tiles as u32;
+            pane.piece_count = diagnostics.atlas.atlas_tiles as u32;
+            pane.warning_count = 0;
+        }
+        LabView::Composite => {
+            pane.contour_count = diagnostics.composite.composite_contours as u32;
+            pane.hull_count = diagnostics.composite.per_tile_contours as u32;
+            pane.piece_count = diagnostics.composite.composite_pieces as u32;
+            pane.warning_count = 0;
+        }
+        LabView::Destructible => {
+            pane.contour_count = diagnostics.destructible.current_contours as u32;
+            pane.hull_count = diagnostics.destructible.current_filled_pixels as u32;
+            pane.piece_count = diagnostics.destructible.current_pieces as u32;
+            pane.warning_count = diagnostics.destructible.warnings as u32;
+        }
+    }
 }
 
 fn draw_active_scene(

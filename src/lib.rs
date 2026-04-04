@@ -16,7 +16,7 @@ mod topology;
 mod triangulation;
 mod validate;
 
-pub use atlas::{AtlasRegion, AtlasSlicer};
+pub use atlas::{AtlasColliderFrame, AtlasRegion, AtlasSlicer, bake_atlas_collider_frames};
 pub use binary_image::BinaryImage;
 pub use components::{
     ColliderGenDirty, ColliderGenOutput, ColliderGenSource, ColliderGenSourceKind,
@@ -69,6 +69,7 @@ impl Plugin for ColliderGenPlugin {
             .register_type::<ColliderGenSource>()
             .register_type::<ColliderGenSourceKind>()
             .register_type::<AtlasRegion>()
+            .register_type::<AtlasColliderFrame>()
             .register_type::<CompoundPolygon>()
             .register_type::<Contour>()
             .register_type::<ContourSpace>()
