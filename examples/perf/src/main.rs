@@ -1,5 +1,4 @@
-use std::time::Instant;
-
+use bevy::platform::time::Instant;
 use bevy::prelude::*;
 use saddle_pane::prelude::*;
 use saddle_systems_collider_gen::{
