@@ -1,10 +1,13 @@
+#[cfg(feature = "e2e")]
+mod e2e;
+
 use bevy::platform::time::Instant;
 use bevy::prelude::*;
 use saddle_pane::prelude::*;
 use saddle_systems_collider_gen::{
-    AtlasSlicer, BinaryImage, ColliderGenConfig, ColliderGenDirty, ColliderGenLod,
-    ColliderGenOutput, ColliderGenPlugin, ColliderGenSource, ColliderGenSourceKind, Contour,
-    simplify_contour,
+    simplify_contour, AtlasSlicer, BinaryImage, ColliderGenConfig, ColliderGenDirty,
+    ColliderGenLod, ColliderGenOutput, ColliderGenPlugin, ColliderGenSource, ColliderGenSourceKind,
+    Contour,
 };
 use saddle_systems_collider_gen_example_support as support;
 
@@ -50,8 +53,12 @@ fn main() {
         .init_resource::<PerfSummary>()
         .register_pane::<PerfBenchPane>()
         .add_systems(Startup, setup)
-        .add_systems(Update, (run_benchmarks, update_overlay).chain())
-        .run();
+        .add_systems(Update, (run_benchmarks, update_overlay).chain());
+
+    #[cfg(feature = "e2e")]
+    app.add_plugins(e2e::ColliderGenPerfE2EPlugin);
+
+    app.run();
 }
 
 fn setup(mut commands: Commands) {
@@ -76,10 +83,7 @@ fn setup(mut commands: Commands) {
     ));
 }
 
-fn run_benchmarks(
-    pane: Res<PerfBenchPane>,
-    mut summary: ResMut<PerfSummary>,
-) {
+fn run_benchmarks(pane: Res<PerfBenchPane>, mut summary: ResMut<PerfSummary>) {
     if !pane.is_changed() && !summary.full_pipeline.is_empty() {
         return;
     }
@@ -90,10 +94,7 @@ fn run_benchmarks(
     summary.dirty_region = benchmark_dirty_region(pane.dirty_region_size);
 }
 
-fn update_overlay(
-    summary: Res<PerfSummary>,
-    mut overlay: Single<&mut Text, With<PerfOverlay>>,
-) {
+fn update_overlay(summary: Res<PerfSummary>, mut overlay: Single<&mut Text, With<PerfOverlay>>) {
     if !summary.is_changed() {
         return;
     }
@@ -110,15 +111,13 @@ fn benchmark_pipeline_masks(size: u32) -> String {
     let config = ColliderGenConfig::default().with_lod(ColliderGenLod::Medium);
 
     let started = Instant::now();
-    let sparse_result =
-        saddle_systems_collider_gen::generate_collider_geometry(&sparse, &config)
-            .expect("sparse mask should generate");
+    let sparse_result = saddle_systems_collider_gen::generate_collider_geometry(&sparse, &config)
+        .expect("sparse mask should generate");
     let sparse_ms = started.elapsed().as_secs_f32() * 1_000.0;
 
     let started = Instant::now();
-    let dense_result =
-        saddle_systems_collider_gen::generate_collider_geometry(&dense, &config)
-            .expect("dense mask should generate");
+    let dense_result = saddle_systems_collider_gen::generate_collider_geometry(&dense, &config)
+        .expect("dense mask should generate");
     let dense_ms = started.elapsed().as_secs_f32() * 1_000.0;
 
     format!(

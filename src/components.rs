@@ -4,7 +4,10 @@ use bevy::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::{BinaryImage, ColliderGenConfig, ColliderGenResult, ConvexPieceMetadata};
+use crate::{
+    BinaryImage, ColliderGenConfig, ColliderGenGenerationSummary, ColliderGenResult,
+    ConvexPieceMetadata,
+};
 
 #[derive(Component, Clone, Debug, PartialEq, Reflect)]
 pub enum ColliderGenSourceKind {
@@ -33,4 +36,5 @@ pub struct ColliderGenOutput {
     pub result: ColliderGenResult,
     pub source_region: Option<URect>,
     pub piece_summary: ConvexPieceMetadata,
+    pub generation: ColliderGenGenerationSummary,
 }

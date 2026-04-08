@@ -1,16 +1,20 @@
 use bevy::{
     ecs::message::MessageCursor,
+    ecs::schedule::ScheduleLabel,
     prelude::*,
     render::render_resource::{Extent3d, TextureDimension, TextureFormat, TextureUsages},
 };
 
 use saddle_systems_collider_gen::{
-    BinaryImage, ColliderGenConfig, ColliderGenDirty, ColliderGenLod, ColliderGenPlugin,
-    ColliderGenSource, ColliderGenSourceKind, ColliderGenSystems, ContourMode,
+    BinaryImage, ColliderGenConfig, ColliderGenDirty, ColliderGenGenerationKind, ColliderGenLod,
+    ColliderGenPlugin, ColliderGenSource, ColliderGenSourceKind, ColliderGenSystems, ContourMode,
 };
 
 #[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct AfterGeneration;
+
+#[derive(ScheduleLabel, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct ManualGeneration;
 
 #[test]
 fn plugin_builds_with_public_system_set_ordering() {
@@ -21,6 +25,41 @@ fn plugin_builds_with_public_system_set_ordering() {
         .configure_sets(Update, ColliderGenSystems::Generate.before(AfterGeneration));
 
     app.finish();
+}
+
+#[test]
+fn plugin_can_run_in_a_custom_schedule() {
+    let mut app = App::new();
+    app.add_plugins(MinimalPlugins)
+        .init_resource::<Assets<Image>>()
+        .init_schedule(ManualGeneration)
+        .add_plugins(ColliderGenPlugin::in_schedule(ManualGeneration));
+
+    let mut mask = BinaryImage::new(4, 4);
+    mask.fill_rect(0, 0, 4, 4);
+    let entity = app
+        .world_mut()
+        .spawn(ColliderGenSource {
+            kind: ColliderGenSourceKind::Binary(mask),
+            config: default(),
+        })
+        .id();
+
+    app.update();
+    assert!(
+        app.world()
+            .get::<saddle_systems_collider_gen::ColliderGenOutput>(entity)
+            .is_none(),
+        "custom-scheduled plugin should not run during the default app update"
+    );
+
+    app.world_mut().run_schedule(ManualGeneration);
+    assert!(
+        app.world()
+            .get::<saddle_systems_collider_gen::ColliderGenOutput>(entity)
+            .is_some(),
+        "custom-scheduled plugin should generate output when its schedule runs"
+    );
 }
 
 #[test]
@@ -42,6 +81,15 @@ fn ecs_regenerates_only_when_marked_dirty_or_changed() {
 
     app.update();
 
+    let output = app
+        .world()
+        .get::<saddle_systems_collider_gen::ColliderGenOutput>(entity)
+        .expect("output should exist after first generation");
+    assert_eq!(
+        output.generation.kind,
+        ColliderGenGenerationKind::FullRebuild
+    );
+
     let mut cursor = MessageCursor::<saddle_systems_collider_gen::ColliderGenFinished>::default();
     let finished_first: Vec<_> = cursor
         .read(
@@ -51,6 +99,10 @@ fn ecs_regenerates_only_when_marked_dirty_or_changed() {
         .cloned()
         .collect();
     assert_eq!(finished_first.len(), 1);
+    assert_eq!(
+        finished_first[0].generation.kind,
+        ColliderGenGenerationKind::FullRebuild
+    );
 
     app.update();
     let finished_second: Vec<_> = cursor
@@ -169,6 +221,11 @@ fn isolated_dirty_regions_merge_back_into_full_output() {
             .expect("full regeneration should succeed");
 
     assert_eq!(output.source_region, Some(URect::new(6, 6, 14, 14)));
+    assert_eq!(
+        output.generation.kind,
+        ColliderGenGenerationKind::DirtyRegionMerged
+    );
+    assert_eq!(output.generation.dirty_source_region, output.source_region);
     assert_eq!(output.result, expected);
 }
 
@@ -219,6 +276,11 @@ fn boundary_touching_dirty_regions_fall_back_to_full_regeneration() {
             .expect("full regeneration should succeed");
 
     assert_eq!(output.source_region, Some(URect::new(5, 0, 15, 8)));
+    assert_eq!(
+        output.generation.kind,
+        ColliderGenGenerationKind::DirtyRegionFallback
+    );
+    assert_eq!(output.generation.dirty_source_region, output.source_region);
     assert_eq!(output.result, expected);
 }
 

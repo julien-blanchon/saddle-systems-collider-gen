@@ -31,6 +31,13 @@ The important design choice is that the geometry stages do not know about physic
 
 The ECS layer keeps dirty updates conservative instead of pretending every crop can be stitched safely. If the expanded dirty crop still contains filled pixels on its outer border, the runtime regenerates from the full mask because the edited shape is still connected to geometry outside the crop.
 
+That ECS layer runs on `Update` by default through `ColliderGenPlugin`, but it can also be wired
+into a caller-chosen schedule with `ColliderGenPlugin::in_schedule(...)` so editor tools,
+fixed-step gameplay, and custom state machines can decide when extraction actually happens.
+It also publishes explicit generation metadata (`full rebuild`, `dirty merge`, `dirty fallback`)
+through `ColliderGenOutput.generation` and `ColliderGenFinished.generation`, which is important
+for tooling because dirty-region correctness decisions are intentionally conservative.
+
 ## Contour Modes
 
 ### PixelExact

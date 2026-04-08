@@ -86,6 +86,9 @@ Current ECS merge rule:
 - if filled pixels still touch the expanded crop border, the crate falls back to full regeneration
 
 This keeps dirty updates deterministic and correct without pretending that every large connected terrain edit can be stitched from a local crop alone.
+Callers can inspect `ColliderGenOutput.generation` or the `ColliderGenFinished.generation` message
+field to distinguish `DirtyRegionMerged` from `DirtyRegionFallback` without reverse-engineering the
+result from `source_region`.
 
 ## Authoring Helpers
 

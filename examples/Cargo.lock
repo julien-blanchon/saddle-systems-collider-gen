@@ -5475,6 +5475,7 @@ name = "saddle-systems-collider-gen-example-perf"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "saddle-bevy-e2e",
  "saddle-pane",
  "saddle-systems-collider-gen",
  "saddle-systems-collider-gen-example-support",

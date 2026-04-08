@@ -6,7 +6,7 @@ Engine-agnostic 2D collision geometry generation for Bevy. The crate turns binar
 
 ```toml
 [dependencies]
-saddle-systems-collider-gen = { workspace = true }
+saddle-systems-collider-gen = { git = "https://github.com/julien-blanchon/saddle-systems-collider-gen" }
 ```
 
 ```rust
@@ -14,16 +14,19 @@ use bevy::prelude::*;
 use saddle_systems_collider_gen::{BinaryImage, ColliderGenConfig};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-let mut mask = BinaryImage::new(24, 16);
-mask.fill_rect(0, 0, 24, 3);
-mask.fill_rect(4, 6, 8, 2);
-mask.carve_circle(IVec2::new(18, 2), 2);
+    let mut mask = BinaryImage::new(24, 16);
+    mask.fill_rect(0, 0, 24, 3);
+    mask.fill_rect(4, 6, 8, 2);
+    mask.carve_circle(IVec2::new(18, 2), 2);
 
-let result = saddle_systems_collider_gen::generate_collider_geometry(&mask, &ColliderGenConfig::default())?;
+    let result = saddle_systems_collider_gen::generate_collider_geometry(
+        &mask,
+        &ColliderGenConfig::default(),
+    )?;
 
-for contour in &result.contours {
-    println!("outline with {} vertices", contour.points.len());
-}
+    for contour in &result.contours {
+        println!("outline with {} vertices", contour.points.len());
+    }
     Ok(())
 }
 ```
@@ -47,6 +50,10 @@ App::new()
         });
     });
 ```
+
+`ColliderGenPlugin` mounts its ECS pipeline into `Update` by default. If your game wants the
+crate to run in a custom schedule, use `ColliderGenPlugin::in_schedule(FixedUpdate)` or any other
+schedule label that fits your state machine or tool workflow.
 
 ## Feature Flags
 
@@ -74,12 +81,14 @@ App::new()
 
 | Type | Purpose |
 | --- | --- |
-| `ColliderGenPlugin` | Registers ECS systems, messages, and reflected component types |
+| `ColliderGenPlugin` | Registers ECS systems, messages, and reflected component types on `Update` by default |
+| `ScheduledColliderGenPlugin` | Configured plugin returned by `ColliderGenPlugin::in_schedule(...)` for custom schedule integration |
 | `ColliderGenSystems` | Public ordering hooks: `Extract`, `Generate`, `Validate`, `Cache` |
 | `ColliderGenSource` | ECS source component holding a binary mask or Bevy image handle plus config; intentionally not `serde`-serializable because `Handle<Image>` is runtime Bevy state |
 | `ColliderGenDirty` | Optional dirty-region marker for targeted regeneration; isolated edits merge back into the previous full result, while boundary-touching crops fall back to full regeneration for correctness |
-| `ColliderGenOutput` | Generated geometry plus cached summary metadata |
-| `ColliderGenFinished` / `ColliderGenFailed` | Buffered completion messages |
+| `ColliderGenOutput` | Generated geometry plus cached summary metadata and the latest generation summary (`full rebuild`, `dirty merge`, or `dirty fallback`) |
+| `ColliderGenGenerationSummary` | Explicit ECS observability for how the latest output was produced and which dirty crop was considered |
+| `ColliderGenFinished` / `ColliderGenFailed` | Buffered completion messages; finished messages include the same generation summary for systems that react without re-querying the component |
 
 ## Output Modes
 
@@ -100,10 +109,16 @@ Current pass behavior:
 
 ## Examples
 
+From the crate root, switch into the examples workspace before running any of these packages:
+
+```bash
+cd examples
+```
+
 | Example | Purpose | Run |
 | --- | --- | --- |
 | `basic` | Minimal authored-mask workflow with live contour-mode, simplification, scale, and decomposition tuning | `cargo run -p saddle-systems-collider-gen-example-basic` |
-| `atlas` | Atlas slicing and per-frame / per-tile generation using the `image` feature, with live extraction tuning | `cargo run -p saddle-systems-collider-gen-example-atlas --features image` |
+| `atlas` | Atlas slicing and per-frame / per-tile generation using the `image` feature, with live extraction tuning | `cargo run -p saddle-systems-collider-gen-example-atlas` |
 | `masks` | Binary-image morphology and cleanup workflows with interactive radius controls | `cargo run -p saddle-systems-collider-gen-example-masks` |
 | `destructible` | ECS-driven dirty regeneration on a mutable terrain mask with live blast radius and config tuning | `cargo run -p saddle-systems-collider-gen-example-destructible` |
 | `tilemap_merge` | Game-like tile composition demo that stamps reusable masks into one seamless collider canvas | `cargo run -p saddle-systems-collider-gen-example-tilemap-merge` |
@@ -121,22 +136,40 @@ Every visual example now includes a `saddle-pane` panel that exposes the key gen
 
 ## Workspace Lab
 
-This repository also provides a crate-local lab app at
-`shared/systems/saddle-systems-collider-gen/examples/lab`:
+This repository also provides a crate-local lab app at `examples/lab`:
 
 ```bash
+cd examples
 cargo run -p saddle-systems-collider-gen-lab
 ```
 
 Crate-local E2E scenarios live with that lab instead of `crates/e2e`:
 
 ```bash
+cd examples
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_basic
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_smoke
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_thresholds
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_atlas
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_composite
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_destructible
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_masks
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_tilemap_merge
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_debug_gizmos
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_animation_frames
+cargo run -p saddle-systems-collider-gen-example-perf --features e2e -- collider_gen_perf_smoke
 ```
+
+Current example-to-E2E mapping:
+
+- `basic` -> `collider_gen_basic`
+- `atlas` -> `collider_gen_atlas`
+- `masks` -> `collider_gen_masks`
+- `destructible` -> `collider_gen_destructible`
+- `tilemap_merge` -> `collider_gen_tilemap_merge`
+- `animation_frames` -> `collider_gen_animation_frames`
+- `debug_gizmos` -> `collider_gen_debug_gizmos`
+- `perf` -> `collider_gen_perf_smoke`
 
 The lab also exposes the same `saddle-pane` controls so you can switch views, adjust the active
 destructible config, and inspect contour / piece counts without recompiling.
@@ -165,6 +198,8 @@ Dirty-region ECS updates are intentionally conservative:
 - edits whose expanded crop still touches filled pixels on the crop boundary fall back to a full rebuild
 
 That policy keeps the runtime correct for large continuous terrain while still allowing true partial regeneration for isolated islands, frames, or editor-authored subregions.
+`ColliderGenOutput.generation` and `ColliderGenFinished.generation` expose which path was taken so
+games and tools can log or react to merge vs fallback behavior explicitly.
 
 ## Composite Authoring Helpers
 
