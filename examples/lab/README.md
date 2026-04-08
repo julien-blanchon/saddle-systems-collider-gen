@@ -15,6 +15,7 @@ Working
 ## Run
 
 ```bash
+cd examples
 cargo run -p saddle-systems-collider-gen-lab
 ```
 
@@ -29,11 +30,18 @@ Keyboard shortcuts:
 ## E2E Scenarios
 
 ```bash
+cd examples
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_basic
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_smoke
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_thresholds
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_atlas
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_composite
 cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_destructible
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_masks
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_tilemap_merge
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_debug_gizmos
+cargo run -p saddle-systems-collider-gen-lab --features e2e -- collider_gen_animation_frames
+cargo run -p saddle-systems-collider-gen-example-perf --features e2e -- collider_gen_perf_smoke
 ```
 
 ## BRP

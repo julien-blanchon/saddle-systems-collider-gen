@@ -3,10 +3,10 @@ use bevy::prelude::*;
 use crate::contour::DirtyRegionRequest;
 use crate::decompose::summarize_pieces;
 use crate::{
-    BinaryImage, ColliderGenDirty, ColliderGenError, ColliderGenFailed, ColliderGenFinished,
-    ColliderGenOutput, ColliderGenResult, ColliderGenSource, ColliderGenSourceKind,
-    CompoundPolygon, Contour, CoordinateTransform, Winding, bounds_for_contours, build_topology,
-    normalize_winding,
+    bounds_for_contours, build_topology, normalize_winding, BinaryImage, ColliderGenDirty,
+    ColliderGenError, ColliderGenFailed, ColliderGenFinished, ColliderGenGenerationKind,
+    ColliderGenGenerationSummary, ColliderGenOutput, ColliderGenResult, ColliderGenSource,
+    ColliderGenSourceKind, CompoundPolygon, Contour, CoordinateTransform, Winding,
 };
 
 #[derive(Component, Clone)]
@@ -81,7 +81,7 @@ pub(crate) fn generate_geometry(
 ) {
     for (entity, source, prepared, previous) in &query {
         match generate_prepared_result(source, prepared, previous) {
-            Ok(result) => {
+            Ok((result, generation)) => {
                 let piece_summary = summarize_pieces(&result.convex_pieces);
                 let contour_count = result.contours.len();
                 let convex_piece_count = result.convex_pieces.len();
@@ -89,6 +89,7 @@ pub(crate) fn generate_geometry(
                     result,
                     source_region: prepared.source_region,
                     piece_summary,
+                    generation,
                 });
                 commands.entity(entity).remove::<ColliderGenDirty>();
                 commands.entity(entity).remove::<PreparedBinaryMask>();
@@ -96,6 +97,7 @@ pub(crate) fn generate_geometry(
                     entity,
                     contour_count,
                     convex_piece_count,
+                    generation,
                 });
             }
             Err(error) => {
@@ -149,7 +151,7 @@ fn generate_prepared_result(
     source: &ColliderGenSource,
     prepared: &PreparedBinaryMask,
     previous: Option<&ColliderGenOutput>,
-) -> Result<ColliderGenResult, ColliderGenError> {
+) -> Result<(ColliderGenResult, ColliderGenGenerationSummary), ColliderGenError> {
     let can_merge_dirty_region = prepared.source_region.is_some()
         && previous.is_some()
         && !mask_touches_boundary(&prepared.mask);
@@ -163,19 +165,37 @@ fn generate_prepared_result(
             .full_mask
             .as_ref()
             .expect("dirty-region updates keep the full mask for fallback and merging");
-        return Ok(merge_dirty_region_result(
-            &previous
-                .expect("checked above that previous output exists")
-                .result,
-            partial,
-            source_region,
-            UVec2::new(full_mask.width(), full_mask.height()),
-            source.config.scale,
+        return Ok((
+            merge_dirty_region_result(
+                &previous
+                    .expect("checked above that previous output exists")
+                    .result,
+                partial,
+                source_region,
+                UVec2::new(full_mask.width(), full_mask.height()),
+                source.config.scale,
+            ),
+            ColliderGenGenerationSummary::dirty_region(
+                ColliderGenGenerationKind::DirtyRegionMerged,
+                source_region,
+            ),
         ));
     }
 
     let mask = prepared.full_mask.as_ref().unwrap_or(&prepared.mask);
-    crate::generate_collider_geometry(mask, &source.config)
+    let generation = prepared
+        .source_region
+        .map(|region| {
+            ColliderGenGenerationSummary::dirty_region(
+                ColliderGenGenerationKind::DirtyRegionFallback,
+                region,
+            )
+        })
+        .unwrap_or_else(ColliderGenGenerationSummary::full_rebuild);
+    Ok((
+        crate::generate_collider_geometry(mask, &source.config)?,
+        generation,
+    ))
 }
 
 fn merge_dirty_region_result(
