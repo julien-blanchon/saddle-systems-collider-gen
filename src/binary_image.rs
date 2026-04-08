@@ -401,7 +401,11 @@ fn threshold_sample(sample: [u8; 4], config: &ImageMaskConfig) -> bool {
         MaskChannelMode::Blue => sample[2] >= config.brightness_threshold,
     };
 
-    if config.invert_mask { !filled } else { filled }
+    if config.invert_mask {
+        !filled
+    } else {
+        filled
+    }
 }
 
 fn polygon_bounds(points: &[Vec2]) -> Rect {
