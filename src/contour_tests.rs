@@ -70,9 +70,7 @@ fn touching_diagonals_stay_as_separate_islands() {
 
     assert!(warnings.is_empty());
     assert_eq!(contours.len(), 2);
-    assert!(
-        contours
-            .iter()
-            .all(|contour| (crate::signed_area(&contour.points).abs() - 1.0).abs() <= 1.0e-5)
-    );
+    assert!(contours
+        .iter()
+        .all(|contour| (crate::signed_area(&contour.points).abs() - 1.0).abs() <= 1.0e-5));
 }

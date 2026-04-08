@@ -3,7 +3,7 @@ use bevy::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::{ColliderGenError, Contour, Winding, is_simple_polygon, normalize_winding};
+use crate::{is_simple_polygon, normalize_winding, ColliderGenError, Contour, Winding};
 
 #[derive(Clone, Copy, Debug, PartialEq, Reflect)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
