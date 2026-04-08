@@ -17,7 +17,7 @@ mod topology;
 mod triangulation;
 mod validate;
 
-pub use atlas::{bake_atlas_collider_frames, AtlasColliderFrame, AtlasRegion, AtlasSlicer};
+pub use atlas::{AtlasColliderFrame, AtlasRegion, AtlasSlicer, bake_atlas_collider_frames};
 pub use binary_image::BinaryImage;
 pub use components::{
     ColliderGenDirty, ColliderGenOutput, ColliderGenSource, ColliderGenSourceKind,
@@ -27,24 +27,24 @@ pub use config::{
     MaskChannelMode, RawImageFormat, SimplificationConfig,
 };
 pub use contour::{
-    extract_pixel_exact_contours, CompoundPolygon, Contour, ContourSpace, ContourSummary,
-    CoordinateTransform, DirtyRegionRequest,
+    CompoundPolygon, Contour, ContourSpace, ContourSummary, CoordinateTransform,
+    DirtyRegionRequest, extract_pixel_exact_contours,
 };
-pub use decompose::{convex_decompose_mask, ConvexPieceMetadata};
+pub use decompose::{ConvexPieceMetadata, convex_decompose_mask};
 pub use errors::{ColliderGenError, ColliderGenResult, ColliderGenWarning};
 pub use generation::{ColliderGenGenerationKind, ColliderGenGenerationSummary};
 pub use hull::convex_hull;
 pub use marching_squares::extract_marching_squares_contours;
 pub use messages::{ColliderGenFailed, ColliderGenFinished};
-pub use simplify::{simplify_contour, SimplificationStats};
+pub use simplify::{SimplificationStats, simplify_contour};
 pub use topology::{
-    bounds_for_contours, build_topology, centroid, normalize_winding, point_in_polygon,
-    signed_area, winding, ContourTopology, Winding,
+    ContourTopology, Winding, bounds_for_contours, build_topology, centroid, normalize_winding,
+    point_in_polygon, signed_area, winding,
 };
-pub use triangulation::{triangulate_simple_polygon, Triangle};
+pub use triangulation::{Triangle, triangulate_simple_polygon};
 pub use validate::{
-    has_self_intersections, is_convex, is_simple_polygon, measure_max_deviation,
-    remove_degenerate_edges, remove_duplicate_vertices, ValidationIssue,
+    ValidationIssue, has_self_intersections, is_convex, is_simple_polygon, measure_max_deviation,
+    remove_degenerate_edges, remove_duplicate_vertices,
 };
 
 use bevy::{

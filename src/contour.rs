@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::errors::{ColliderGenError, ColliderGenWarning};
 use crate::validate::remove_degenerate_edges;
-use crate::{convex_hull, BinaryImage};
+use crate::{BinaryImage, convex_hull};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Reflect)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

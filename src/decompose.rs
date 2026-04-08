@@ -4,12 +4,12 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::contour::CompoundPolygon;
-use crate::topology::{build_topology, ContourTopology};
+use crate::topology::{ContourTopology, build_topology};
 use crate::triangulation::triangulate_simple_polygon;
 use crate::validate::{is_convex, is_simple_polygon, remove_degenerate_edges};
 use crate::{
-    extract_pixel_exact_contours, BinaryImage, ColliderGenConfig, ColliderGenError, Contour,
-    CoordinateTransform,
+    BinaryImage, ColliderGenConfig, ColliderGenError, Contour, CoordinateTransform,
+    extract_pixel_exact_contours,
 };
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Reflect)]

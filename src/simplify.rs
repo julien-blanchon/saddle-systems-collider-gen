@@ -3,7 +3,7 @@ use bevy::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::validate::{measure_max_deviation, validate_polygon, ValidationIssue};
+use crate::validate::{ValidationIssue, measure_max_deviation, validate_polygon};
 use crate::{ColliderGenConfig, ColliderGenError, ColliderGenWarning, Contour};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Reflect)]
