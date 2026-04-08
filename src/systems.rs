@@ -3,10 +3,10 @@ use bevy::prelude::*;
 use crate::contour::DirtyRegionRequest;
 use crate::decompose::summarize_pieces;
 use crate::{
-    bounds_for_contours, build_topology, normalize_winding, BinaryImage, ColliderGenDirty,
-    ColliderGenError, ColliderGenFailed, ColliderGenFinished, ColliderGenGenerationKind,
-    ColliderGenGenerationSummary, ColliderGenOutput, ColliderGenResult, ColliderGenSource,
-    ColliderGenSourceKind, CompoundPolygon, Contour, CoordinateTransform, Winding,
+    BinaryImage, ColliderGenDirty, ColliderGenError, ColliderGenFailed, ColliderGenFinished,
+    ColliderGenGenerationKind, ColliderGenGenerationSummary, ColliderGenOutput, ColliderGenResult,
+    ColliderGenSource, ColliderGenSourceKind, CompoundPolygon, Contour, CoordinateTransform,
+    Winding, bounds_for_contours, build_topology, normalize_winding,
 };
 
 #[derive(Component, Clone)]

@@ -16,12 +16,16 @@ fn build_topology_identifies_hole_relationships() {
     let topology = build_topology(&contours);
 
     assert_eq!(topology.len(), 2);
-    assert!(topology
-        .iter()
-        .any(|entry| entry.parent.is_none() && !entry.is_hole));
-    assert!(topology
-        .iter()
-        .any(|entry| entry.parent.is_some() && entry.is_hole));
+    assert!(
+        topology
+            .iter()
+            .any(|entry| entry.parent.is_none() && !entry.is_hole)
+    );
+    assert!(
+        topology
+            .iter()
+            .any(|entry| entry.parent.is_some() && entry.is_hole)
+    );
 }
 
 #[test]
