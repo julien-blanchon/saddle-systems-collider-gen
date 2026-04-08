@@ -66,8 +66,11 @@ fn draw_scene(
         .enumerate()
     {
         let offset = Vec2::new(index as f32 * 320.0 - 320.0, 0.0);
-        let transform =
-            CoordinateTransform::centered(mask.width(), mask.height(), Vec2::splat(pane.render_scale));
+        let transform = CoordinateTransform::centered(
+            mask.width(),
+            mask.height(),
+            Vec2::splat(pane.render_scale),
+        );
         if pane.show_mask {
             support::draw_mask_at(
                 &mut gizmos,

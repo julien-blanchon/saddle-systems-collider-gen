@@ -603,8 +603,11 @@ fn sync_lab_pane(
         _ => LabView::Destructible,
     };
 
-    pattern.timer
-        .set_duration(std::time::Duration::from_secs_f32(pane.cycle_seconds.max(0.05)));
+    pattern
+        .timer
+        .set_duration(std::time::Duration::from_secs_f32(
+            pane.cycle_seconds.max(0.05),
+        ));
 
     let Ok(mut source) = query.single_mut() else {
         return;
@@ -626,8 +629,7 @@ fn sync_lab_pane(
             visvalingam_area_threshold: pane.visvalingam_area_threshold.max(0.0),
             ..default()
         },
-        ..ColliderGenConfig::default()
-            .with_lod(saddle_systems_collider_gen::ColliderGenLod::Medium)
+        ..ColliderGenConfig::default().with_lod(saddle_systems_collider_gen::ColliderGenLod::Medium)
     };
 }
 

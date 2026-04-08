@@ -61,9 +61,8 @@ fn build_scene(pane: &ColliderGenExamplePane) -> AtlasScene {
         if tile.filled_count() == 0 {
             continue;
         }
-        let result =
-            saddle_systems_collider_gen::generate_collider_geometry(&tile, &config)
-                .expect("tile collider generation should succeed");
+        let result = saddle_systems_collider_gen::generate_collider_geometry(&tile, &config)
+            .expect("tile collider generation should succeed");
         let column = (slot % 3) as f32;
         let row = (slot / 3) as f32;
         tiles.push((
@@ -101,8 +100,11 @@ fn draw_scene(
     let mut warning_count = 0;
 
     for (tile, result, offset) in &scene.tiles {
-        let transform =
-            CoordinateTransform::centered(tile.width(), tile.height(), Vec2::splat(pane.render_scale));
+        let transform = CoordinateTransform::centered(
+            tile.width(),
+            tile.height(),
+            Vec2::splat(pane.render_scale),
+        );
         if pane.show_mask {
             support::draw_mask_at(
                 &mut gizmos,

@@ -18,12 +18,7 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(
             Update,
-            (
-                sync_destructible_pane,
-                carve_terrain,
-                draw_scene,
-            )
-                .chain(),
+            (sync_destructible_pane, carve_terrain, draw_scene).chain(),
         )
         .run();
 }
@@ -52,8 +47,9 @@ fn sync_destructible_pane(
     mut timer: ResMut<BlastTimer>,
     mut sources: Query<&mut ColliderGenSource>,
 ) {
-    timer.0
-        .set_duration(std::time::Duration::from_secs_f32(pane.cycle_seconds.max(0.05)));
+    timer.0.set_duration(std::time::Duration::from_secs_f32(
+        pane.cycle_seconds.max(0.05),
+    ));
     for mut source in &mut sources {
         source.config = pane_config(&pane);
     }
@@ -102,8 +98,11 @@ fn draw_scene(
         let ColliderGenSourceKind::Binary(mask) = &source.kind else {
             continue;
         };
-        let transform =
-            CoordinateTransform::centered(mask.width(), mask.height(), Vec2::splat(pane.render_scale));
+        let transform = CoordinateTransform::centered(
+            mask.width(),
+            mask.height(),
+            Vec2::splat(pane.render_scale),
+        );
         if pane.show_mask {
             support::draw_mask(
                 &mut gizmos,

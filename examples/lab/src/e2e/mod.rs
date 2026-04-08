@@ -119,8 +119,8 @@ fn build_basic() -> Scenario {
 }
 
 fn build_masks() -> Scenario {
-    use saddle_bevy_e2e::actions::assertions;
     use crate::LabDiagnostics;
+    use saddle_bevy_e2e::actions::assertions;
 
     Scenario::builder("collider_gen_masks")
         .description(
@@ -190,8 +190,8 @@ fn build_tilemap_merge() -> Scenario {
 }
 
 fn build_debug_gizmos() -> Scenario {
-    use saddle_bevy_e2e::actions::assertions;
     use crate::LabDiagnostics;
+    use saddle_bevy_e2e::actions::assertions;
 
     Scenario::builder("collider_gen_debug_gizmos")
         .description(
@@ -228,8 +228,8 @@ fn build_debug_gizmos() -> Scenario {
 }
 
 fn build_animation_frames() -> Scenario {
-    use saddle_bevy_e2e::actions::assertions;
     use crate::LabDiagnostics;
+    use saddle_bevy_e2e::actions::assertions;
 
     Scenario::builder("collider_gen_animation_frames")
         .description(

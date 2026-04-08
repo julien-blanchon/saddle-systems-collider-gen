@@ -71,8 +71,11 @@ fn draw_scene(
     scene: Res<ComparisonScene>,
     mut pane: ResMut<ColliderGenExamplePane>,
 ) {
-    let transform =
-        CoordinateTransform::centered(scene.mask.width(), scene.mask.height(), Vec2::splat(pane.render_scale));
+    let transform = CoordinateTransform::centered(
+        scene.mask.width(),
+        scene.mask.height(),
+        Vec2::splat(pane.render_scale),
+    );
     let left_offset = Vec2::new(-360.0, 0.0);
     let right_offset = Vec2::new(360.0, 0.0);
 
@@ -147,7 +150,6 @@ fn draw_scene(
 
     pane.contour_count = (scene.left.contours.len() + scene.right.contours.len()) as u32;
     pane.hull_count = (scene.left.convex_hulls.len() + scene.right.convex_hulls.len()) as u32;
-    pane.piece_count =
-        (scene.left.convex_pieces.len() + scene.right.convex_pieces.len()) as u32;
+    pane.piece_count = (scene.left.convex_pieces.len() + scene.right.convex_pieces.len()) as u32;
     pane.warning_count = (scene.left.warnings.len() + scene.right.warnings.len()) as u32;
 }

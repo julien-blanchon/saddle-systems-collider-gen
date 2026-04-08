@@ -1,4 +1,8 @@
-use saddle_bevy_e2e::{action::Action, actions::assertions, scenario::Scenario};
+use saddle_bevy_e2e::{
+    action::Action,
+    actions::{assertions, inspect},
+    scenario::Scenario,
+};
 
 use crate::{LabDiagnostics, LabView};
 
@@ -19,6 +23,10 @@ pub fn build() -> Scenario {
                     && diagnostics.overview.convex_pieces > 0
             },
         ))
+        .then(inspect::log_resource::<LabDiagnostics>(
+            "collider_gen_smoke diagnostics",
+        ))
+        .then(inspect::log_world_summary("collider_gen_smoke world"))
         .then(Action::Screenshot("overview".into()))
         .then(assertions::log_summary("collider_gen_smoke"))
         .build()

@@ -5,9 +5,9 @@ use bevy::platform::time::Instant;
 use bevy::prelude::*;
 use saddle_pane::prelude::*;
 use saddle_systems_collider_gen::{
-    simplify_contour, AtlasSlicer, BinaryImage, ColliderGenConfig, ColliderGenDirty,
-    ColliderGenLod, ColliderGenOutput, ColliderGenPlugin, ColliderGenSource, ColliderGenSourceKind,
-    Contour,
+    AtlasSlicer, BinaryImage, ColliderGenConfig, ColliderGenDirty, ColliderGenLod,
+    ColliderGenOutput, ColliderGenPlugin, ColliderGenSource, ColliderGenSourceKind, Contour,
+    simplify_contour,
 };
 use saddle_systems_collider_gen_example_support as support;
 

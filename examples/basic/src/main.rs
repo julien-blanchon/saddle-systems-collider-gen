@@ -1,7 +1,9 @@
 use saddle_systems_collider_gen_example_support as support;
 
 use bevy::prelude::*;
-use saddle_systems_collider_gen::{BinaryImage, ColliderGenLod, ColliderGenResult, CoordinateTransform};
+use saddle_systems_collider_gen::{
+    BinaryImage, ColliderGenLod, ColliderGenResult, CoordinateTransform,
+};
 use support::{ColliderGenExamplePane, ColliderGenPaneSettings};
 
 #[derive(Resource)]

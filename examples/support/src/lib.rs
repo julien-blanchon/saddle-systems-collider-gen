@@ -151,8 +151,7 @@ pub fn pane_config(pane: &ColliderGenExamplePane, lod: ColliderGenLod) -> Collid
         ContourMode::PixelExact
     };
     config.simplification.rdp_epsilon = pane.rdp_epsilon.max(0.0);
-    config.simplification.visvalingam_area_threshold =
-        pane.visvalingam_area_threshold.max(0.0);
+    config.simplification.visvalingam_area_threshold = pane.visvalingam_area_threshold.max(0.0);
     config.minimum_area = pane.minimum_area.max(0.0);
     config.decomposition.enabled = pane.decompose;
     config

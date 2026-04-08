@@ -119,8 +119,11 @@ fn draw_scene(
     mut pane: ResMut<ColliderGenExamplePane>,
 ) {
     for (tile, offset, color) in &scene.tiles {
-        let transform =
-            CoordinateTransform::centered(tile.width(), tile.height(), Vec2::splat(pane.render_scale));
+        let transform = CoordinateTransform::centered(
+            tile.width(),
+            tile.height(),
+            Vec2::splat(pane.render_scale),
+        );
         support::draw_mask_at(&mut gizmos, tile, transform, *offset, *color);
     }
 

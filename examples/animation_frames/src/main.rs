@@ -39,8 +39,9 @@ fn build_frame_data(pane: &ColliderGenExamplePane) -> FrameData {
     let masks = (0..4)
         .map(|index| slicer.slice_index(index).expect("frame should slice"))
         .collect();
-    let frames = bake_atlas_collider_frames(&slicer, &support::pane_config(pane, ColliderGenLod::High))
-        .expect("frame bake should succeed");
+    let frames =
+        bake_atlas_collider_frames(&slicer, &support::pane_config(pane, ColliderGenLod::High))
+            .expect("frame bake should succeed");
 
     FrameData {
         masks,
@@ -59,7 +60,9 @@ fn refresh_scene(
     if last_settings.as_ref() == Some(&settings) {
         frame_data
             .timer
-            .set_duration(std::time::Duration::from_secs_f32(pane.cycle_seconds.max(0.05)));
+            .set_duration(std::time::Duration::from_secs_f32(
+                pane.cycle_seconds.max(0.05),
+            ));
         return;
     }
 
